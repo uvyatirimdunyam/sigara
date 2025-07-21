@@ -42,6 +42,17 @@
       color: #555;
       margin-top: 0.5rem;
     }
+    /* Tarih ve fiyat metinlerini input gibi hizalamak için */
+    .form-control-plaintext.form-control-sm {
+        padding-top: calc(0.25rem + 1px);
+        padding-bottom: calc(0.25rem + 1px);
+        margin-bottom: 0;
+        line-height: 1.5;
+        border-bottom: 1px solid #dee2e6; /* Alt çizgi ekleyelim */
+    }
+    .historical-period .form-label {
+        color: #6c757d; /* Etiket rengini hafifletelim */
+    }
   </style>
 </head>
 <body>
@@ -61,6 +72,10 @@
         </div>
 
         <h5 class="mt-4">📅 Fiyat Dönemleri</h5>
+        <p class="text-muted small mb-3">
+          Geçmiş fiyat verileri piyasadaki ortalama en ucuz sigara paket fiyatlarına göre eklenmiştir ve değiştirilemez.
+          Yeni dönemler ekleyerek kendi verilerinizi girebilirsiniz.
+        </p>
         <div id="pricePeriods" class="period-inputs"></div>
 
         <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPeriod()">+ Dönem Ekle</button>
@@ -84,23 +99,42 @@
      * @param {string} date - Dönemin başlangıç tarihi (YYYY-MM-DD formatında).
      * @param {number} price - Paket fiyatı.
      * @param {boolean} fromLoad - Verinin localStorage'dan mı yüklendiğini belirtir.
+     * @param {boolean} isHistorical - Dönemin sabit geçmiş veri olup olmadığını belirtir.
      */
-    function addPeriod(date = '', price = '', fromLoad = false) {
+    function addPeriod(date = '', price = '', fromLoad = false, isHistorical = false) {
       const row = document.createElement("div");
       row.classList.add("row", "align-items-end");
-      row.innerHTML = `
-        <div class="col-md-5">
-          <label class="form-label">Başlangıç Tarihi</label>
-          <input type="date" class="form-control form-control-sm period-date" value="${date}">
-        </div>
-        <div class="col-md-5">
-          <label class="form-label">Paket Fiyatı (₺)</label>
-          <input type="number" class="form-control form-control-sm period-price" step="0.01" value="${price}">
-        </div>
-        <div class="col-md-2 text-end">
-          <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removePeriod(this)">Kaldır</button>
-        </div>
-      `;
+      
+      if (isHistorical) {
+          row.classList.add("historical-period"); // Tarihsel dönemleri işaretlemek için sınıf
+          row.innerHTML = `
+            <div class="col-md-5">
+              <label class="form-label">Başlangıç Tarihi</label>
+              <p class="form-control-plaintext form-control-sm">${date}</p>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Paket Fiyatı (₺)</label>
+              <p class="form-control-plaintext form-control-sm">${price.toFixed(2)}</p>
+            </div>
+            <div class="col-md-2 text-end">
+              <!-- Tarihsel veriler için kaldır butonu yok -->
+            </div>
+          `;
+      } else {
+          row.innerHTML = `
+            <div class="col-md-5">
+              <label class="form-label">Başlangıç Tarihi</label>
+              <input type="date" class="form-control form-control-sm period-date" value="${date}">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Paket Fiyatı (₺)</label>
+              <input type="number" class="form-control form-control-sm period-price" step="0.01" value="${price}">
+            </div>
+            <div class="col-md-2 text-end">
+              <button type="button" class="btn btn-sm btn-outline-danger remove-btn" onclick="removePeriod(this)">Kaldır</button>
+            </div>
+          `;
+      }
       pricePeriods.appendChild(row);
       // Sadece kullanıcı etkileşimiyle eklendiğinde veya ilk yüklemede hesapla
       if (!fromLoad) {
@@ -123,11 +157,14 @@
     function saveData() {
         const dailyCigarettes = document.getElementById("dailyCigarettes").value;
         const startDate = startDateInput.value;
-        const periods = Array.from(pricePeriods.children).map(row => {
-            const date = row.querySelector(".period-date").value;
-            const price = row.querySelector(".period-price").value;
-            return { date, price };
-        });
+        // Sadece kullanıcı tarafından eklenen (tarihsel olmayan) dönemleri kaydet
+        const periods = Array.from(pricePeriods.children)
+            .filter(row => !row.classList.contains("historical-period"))
+            .map(row => {
+                const date = row.querySelector(".period-date").value;
+                const price = row.querySelector(".period-price").value;
+                return { date, price };
+            });
 
         const dataToSave = {
             dailyCigarettes: dailyCigarettes,
@@ -142,28 +179,29 @@
      */
     function loadData() {
         const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        // Fiyat dönemlerini temizlemeden önce varsa varsayılanları kaldır
+        
+        // Önce tüm fiyat dönemlerini temizle
         while (pricePeriods.firstChild) {
             pricePeriods.removeChild(pricePeriods.firstChild);
         }
+        
+        // Her zaman varsayılan geçmiş verilerini ekle
+        addDefaultHistoricalPeriods();
 
         if (savedData) {
             const data = JSON.parse(savedData);
             document.getElementById("dailyCigarettes").value = data.dailyCigarettes || 20;
             startDateInput.value = data.startDate;
 
+            // Kullanıcı tarafından kaydedilmiş dönemleri ekle (bunlar tarihsel değil)
             if (data.periods && data.periods.length > 0) {
-                data.periods.forEach(p => addPeriod(p.date, p.price, true)); // true ile yüklemeden geldiğini belirt
-            } else {
-                // Kayıtlı dönem yoksa varsayılan geçmiş verilerini ekle
-                addDefaultHistoricalPeriods();
+                data.periods.forEach(p => addPeriod(p.date, p.price, true, false)); // fromLoad=true, isHistorical=false
             }
         } else {
-            // Hiç kayıtlı veri yoksa varsayılan geçmiş verilerini ekle
+            // Hiç kayıtlı veri yoksa, başlangıç tarihini bugüne ayarla
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            startDateInput.value = today.toISOString().split('T')[0]; // Bırakma tarihini bugüne ayarla
-            addDefaultHistoricalPeriods();
+            startDateInput.value = today.toISOString().split('T')[0];
         }
         calculateSavings(); // Veriler yüklendikten sonra hesaplamayı tetikle
     }
@@ -174,13 +212,14 @@
     function addDefaultHistoricalPeriods() {
         // Sigara fiyatlarına son 5 yılda yapılan zamlar ve fiyatlar (En ucuz paket baz alınmıştır)
         // Bu veriler yaklaşık değerlerdir ve piyasadaki en ucuz sigara grupları baz alınmıştır.
-        addPeriod('2020-07-01', 20.00, true); 
-        addPeriod('2021-01-01', 35.00, true);
-        addPeriod('2022-01-01', 45.00, true);
-        addPeriod('2023-06-05', 55.00, true); 
-        addPeriod('2024-01-01', 65.00, true); 
-        addPeriod('2025-03-05', 76.00, true); 
-        addPeriod('2025-07-01', 90.00, true); // En güncel fiyatı en sona ekleyin
+        // isHistorical parametresi true olarak ayarlandı.
+        addPeriod('2020-07-01', 20.00, true, true); 
+        addPeriod('2021-01-01', 35.00, true, true);
+        addPeriod('2022-01-01', 45.00, true, true);
+        addPeriod('2023-06-05', 55.00, true, true); 
+        addPeriod('2024-01-01', 65.00, true, true); 
+        addPeriod('2025-03-05', 76.00, true, true); 
+        addPeriod('2025-07-01', 90.00, true, true); // En güncel fiyatı en sona ekleyin
     }
 
 
@@ -212,10 +251,20 @@
       }
 
       // Fiyat dönemlerini al ve filtrele
+      // Hem tarihsel hem de kullanıcı tarafından eklenen dönemleri al
       const periods = Array.from(pricePeriods.children).map(row => {
-        const date = new Date(row.querySelector(".period-date").value);
+        let date, price;
+        if (row.classList.contains("historical-period")) {
+            // Tarihsel dönemler için metin içeriğini al
+            // p etiketlerini doğru div kapsayıcıları içinden seçiyoruz
+            date = new Date(row.querySelector(".col-md-5:nth-child(1) p").textContent);
+            price = parseFloat(row.querySelector(".col-md-5:nth-child(2) p").textContent);
+        } else {
+            // Kullanıcı eklediği dönemler için input değerlerini al
+            date = new Date(row.querySelector(".period-date").value);
+            price = parseFloat(row.querySelector(".period-price").value);
+        }
         date.setHours(0, 0, 0, 0); // Tarihin saatini sıfırla
-        const price = parseFloat(row.querySelector(".period-price").value);
         return { date, price };
       }).filter(p => !isNaN(p.date.getTime()) && !isNaN(p.price) && p.price > 0); // Geçersiz veya sıfır/negatif fiyatlı dönemleri filtrele
 
