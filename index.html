@@ -10,19 +10,42 @@
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f8f9fa;
-      padding: 2rem;
-      display: flex; /* İçeriği dikeyde ve yatayda ortalamak için */
-      justify-content: center; /* Yatayda ortala */
-      align-items: flex-start; /* Dikeyde başlangıca hizala, gerekirse ortala */
-      min-height: 100vh; /* Sayfanın tüm yüksekliğini kapla */
+      padding: 0; /* Kenarlardaki boşlukları kaldırmak için padding 0 yapıldı */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      overflow-y: auto; /* Dikey kaydırmayı etkinleştir */
+      padding-bottom: 70px; /* Sayfanın en altına boşluk ekle */
     }
     .container {
-      max-width: 600px; /* Konteynerin maksimum genişliğini ayarla */
-      width: 100%; /* Duyarlılık için genişliği %100 yap */
+      width: 100%; /* Mobil dahil tüm ekranlarda tam genişlik */
+      padding-left: 0; /* Bootstrap'in varsayılan yatay padding'ini kaldır */
+      padding-right: 0; /* Bootstrap'in varsayılan yatay padding'ini kaldır */
+    }
+    /* Orta ve daha büyük ekranlar için maksimum genişlik ve yatay padding ekle */
+    @media (min-width: 768px) { /* Bootstrap'in md (medium) breakpoint'i */
+      .container {
+        max-width: 600px; /* Masaüstü/tablet için belirli bir maksimum genişlik */
+        padding-left: var(--bs-gutter-x, 1.5rem); /* Bootstrap'in varsayılan yatay padding'ini geri ekle */
+        padding-right: var(--bs-gutter-x, 1.5rem);
+      }
     }
     .card {
       box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+      border-radius: 0; /* Mobil tam ekran için kartın köşelerini kaldırdım */
+      padding: 1.5rem; /* İçerik için yeterli boşluk */
+      margin: 0; /* Mobil cihazlarda kenar boşluğunu kaldır */
+      border: none; /* Mobil cihazlarda kenarlığı kaldır */
+      margin-bottom: 20px; /* Kartın altına boşluk ekle */
     }
+    /* Mobil cihazlarda kartın kenarlarını ekran kenarına yapıştırmak için */
+    @media (max-width: 767.98px) {
+      .card {
+        border-radius: 0; /* Mobil tam ekran için köşeleri tamamen düz yap */
+      }
+    }
+
     .remove-btn {
       cursor: pointer;
     }
@@ -37,19 +60,41 @@
       font-size: 1.2rem;
       margin-top: 1rem;
     }
-    /* .period-savings-detail sınıfı artık tablo satırları için kullanılacak, stilini güncelleyelim */
-    .period-savings-detail td {
-      font-size: 0.9rem;
-      color: #555;
-      padding: 0.25rem 0.5rem; /* Hücre iç boşlukları */
+    /* Ortak tablo stilleri */
+    .period-savings-table {
+        width: 100%; /* Tam genişliği kapla */
+        border-collapse: collapse; /* Gerçek tablolar için */
+        table-layout: fixed; /* Sütun genişliklerinin sabit kalmasını sağlar */
     }
     .period-savings-table th {
         font-size: 0.95rem;
         padding: 0.5rem;
         background-color: #e9ecef;
         border-bottom: 2px solid #dee2e6;
+        text-align: left; /* Varsayılan th hizalaması */
     }
-    .period-savings-table td {
+    .period-savings-table th:last-child {
+        text-align: right; /* Son başlığı sağa hizala (miktar/buton sütunu için) */
+    }
+    /* Sütun genişliklerini ayarla */
+    .period-savings-table thead th:nth-child(1),
+    .period-savings-table tbody td:nth-child(1) {
+        width: 38%; /* 'Dönem Başlangıcı' için genişlik */
+    }
+    .period-savings-table thead th:nth-child(2),
+    .period-savings-table tbody td:nth-child(2) {
+        width: 27%; /* 'Paket Fiyatı' için genişlik */
+    }
+    .period-savings-table thead th:nth-child(3),
+    .period-savings-table tbody td:nth-child(3) {
+        width: 35%; /* 'Tasarruf (₺)' için genişlik */
+    }
+
+    /* Gerçek tasarruf tablosu için stiller (tbody ve tfoot) */
+    .period-savings-table tbody td {
+        font-size: 0.9rem;
+        color: #555;
+        padding: 0.25rem 0.5rem;
         border-bottom: 1px solid #e9ecef;
     }
     .period-savings-table tbody tr:last-child td {
@@ -60,14 +105,51 @@
         padding-top: 0.75rem;
         border-top: 2px solid #dee2e6;
     }
+    .period-savings-table td.text-end { /* td için sağa hizalama */
+        text-align: right;
+    }
+    /* Toplam tasarruf satırının ilk hücresi için genişlik */
+    .period-savings-table tfoot td:nth-child(1) {
+        width: 65%; /* İlk iki sütunun toplamı (38% + 27%) */
+    }
+    .period-savings-table tfoot td:nth-child(2) {
+        width: 35%; /* Son sütunun genişliği */
+    }
 
+
+    /* Div tabanlı geçmiş fiyatlar tablosu için stiller */
+    #pricePeriodsTable .row {
+        display: flex;
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.25rem 0;
+        align-items: center;
+    }
+    #pricePeriodsTable .row:last-of-type {
+        border-bottom: none;
+    }
+    #pricePeriodsTable .row > div { /* col-5 ve col-2 div'lerini hedefle */
+        padding: 0.25rem 0.5rem; /* td padding'ini taklit et */
+    }
+    #pricePeriodsTable .row.fw-bold { /* Başlık satırı stili */
+        background-color: #e9ecef;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.5rem 0;
+    }
+    #pricePeriodsTable .row.fw-bold > div {
+        padding: 0.5rem; /* th padding'iyle eşleştir */
+        font-weight: bold; /* Başlık metnini kalın yap */
+    }
+    #pricePeriodsTable .row.fw-bold .col-2 {
+        text-align: right; /* Buton sütunu başlığını hizala */
+    }
+    
     /* Tarih ve fiyat metinlerini input gibi hizalamak için */
     .form-control-plaintext.form-control-sm {
         padding-top: calc(0.25rem + 1px);
         padding-bottom: calc(0.25rem + 1px);
         margin-bottom: 0;
         line-height: 1.5;
-        border-bottom: 1px solid #dee2e6; /* Alt çizgi ekleyelim */
+        border-bottom: 1px solid #dee2e6; /* Input benzeri görünüm için alt çizgi */
     }
     /* Tarihsel dönemler için label'ları gizle */
     .historical-period .form-label {
@@ -80,6 +162,66 @@
     /* Fiyat Dönemleri detaylarını başlangıçta gizlemek için */
     #historicalPeriodsContainer {
         display: none; /* Başlangıçta gizli */
+    }
+    /* Detaylı tasarruf div'i için yatay kaydırma */
+    #detailedSavings {
+        overflow-x: auto; /* İçerik taşarsa yatay kaydırma çubuğu göster */
+        -webkit-overflow-scrolling: touch; /* iOS'ta daha akıcı kaydırma */
+    }
+    /* Grafik konteyneri için stil */
+    #savingsChartContainer {
+        margin-top: 2rem;
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.05);
+        display: none; /* Başlangıçta gizli */
+        height: 250px; /* Grafiğin sabit yüksekliği */
+        position: relative; /* Canvas'ın %100 yüksekliğini alması için */
+    }
+    #savingsChart {
+        width: 100%; /* Konteynerin genişliğini kapla */
+        height: 100%; /* Konteynerin yüksekliğini kapla */
+    }
+
+    /* Yeni eklenen hedefler ve istatistikler bölümleri için stil */
+    .goals-section, .stats-section, .investment-section {
+        margin-top: 2rem;
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.05);
+        /* display: none; */ /* Bu satırı kaldırdık, artık varsayılan olarak görünür */
+    }
+    .goal-item {
+        margin-bottom: 1rem;
+    }
+    .goal-item:last-child {
+        margin-bottom: 0;
+    }
+    .progress {
+        height: 20px; /* Progress bar yüksekliği */
+        font-size: 0.85rem;
+    }
+    .progress-bar {
+        background-color: #28a745; /* Yeşil renk */
+    }
+    .stats-item {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    /* Kâr/Zarar durumu için renkler */
+    .profit {
+        color: #28a745; /* Yeşil */
+        font-weight: bold;
+    }
+    .loss {
+        color: #dc3545; /* Kırmızı */
+        font-weight: bold;
+    }
+    .neutral {
+        color: #6c757d; /* Gri */
+        font-weight: bold;
     }
   </style>
 </head>
@@ -110,8 +252,8 @@
               Yeni dönemler ekleyerek kendi verilerinizi girebilirsiniz.
             </p>
             
-            <div id="pricePeriodsTable" class="mb-3"> <!-- Yeni konteyner: Başlık ve dönemleri içerir -->
-                <div class="row fw-bold border-bottom pb-2 mb-2"> <!-- Başlık satırı -->
+            <div id="pricePeriodsTable" class="mb-3 period-savings-table"> <!-- Yeni konteyner: Başlık ve dönemleri içerir -->
+                <div class="row fw-bold"> <!-- Başlık satırı -->
                     <div class="col-5">Başlangıç Tarihi</div>
                     <div class="col-5">Paket Fiyatı (₺)</div>
                     <div class="col-2 text-end"></div> <!-- Kaldır butonu sütunu için boşluk -->
@@ -122,12 +264,52 @@
 
         <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPeriod()">+ Dönem Ekle</button>
 
+        <div class="result-box text-success" id="result"></div>
+
         <h5 class="mt-3">Dönemlere Göre Tasarruf Detayları:</h5>
         <div id="detailedSavings" class="mt-2"></div>
+
+        <div id="savingsChartContainer">
+            <h5 class="mb-3">Tasarruf Grafiği</h5>
+            <canvas id="savingsChart"></canvas>
+        </div>
+
+        <!-- Yeni eklenen Sigarasız Geçen Süre Hedefleri bölümü -->
+        <div id="smokeFreeGoals" class="goals-section">
+            <h5 class="mb-3">Sigarasız Geçen Süre Hedefleri</h5>
+            <div id="goalsList">
+                <!-- Hedefler buraya JavaScript ile eklenecek -->
+            </div>
+        </div>
+
+        <!-- Yeni eklenen İçilmeyen Sigara ve Paket Sayısı bölümü -->
+        <div id="smokeFreeStats" class="stats-section">
+            <h5 class="mb-3">İçilmeyen Sigara ve Paket Sayısı</h5>
+            <p id="totalCigarettesNotSmoked" class="stats-item"></p>
+            <p id="totalPacksNotSmoked" class="stats-item"></p>
+        </div>
+
+        <!-- Yeni eklenen Yatırım Takibi bölümü -->
+        <div id="investmentTracker" class="investment-section">
+            <h5 class="mb-3">Yatırım Takibi</h5>
+            <div class="mb-3 row">
+                <div class="col-md-6">
+                    <label for="investedAmount" class="form-label">Yatırılan Tutar (₺)</label>
+                    <input type="number" class="form-control" id="investedAmount" step="0.01">
+                </div>
+                <div class="col-md-6">
+                    <label for="currentValue" class="form-label">Şu Anki Değer (₺)</label>
+                    <input type="number" class="form-control" id="currentValue" step="0.01">
+                </div>
+            </div>
+            <p id="investmentStatus" class="stats-item text-center"></p>
+        </div>
+
       </form>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const pricePeriods = document.getElementById("pricePeriods");
     const startDateInput = document.getElementById("startDate");
@@ -135,6 +317,20 @@
     const detailedSavingsDiv = document.getElementById("detailedSavings");
     const historicalPeriodsContainer = document.getElementById("historicalPeriodsContainer");
     const toggleHistoricalPeriodsBtn = document.getElementById("toggleHistoricalPeriodsBtn");
+    const savingsChartCanvas = document.getElementById('savingsChart');
+    const savingsChartContainer = document.getElementById('savingsChartContainer');
+    const smokeFreeGoalsDiv = document.getElementById('smokeFreeGoals');
+    const goalsListDiv = document.getElementById('goalsList');
+    const smokeFreeStatsDiv = document.getElementById('smokeFreeStats');
+    const totalCigarettesNotSmokedP = document.getElementById('totalCigarettesNotSmoked');
+    const totalPacksNotSmokedP = document.getElementById('totalPacksNotSmoked');
+    const investmentTrackerDiv = document.getElementById('investmentTracker');
+    const investedAmountInput = document.getElementById('investedAmount');
+    const currentValueInput = document.getElementById('currentValue');
+    const investmentStatusP = document.getElementById('investmentStatus');
+
+
+    let savingsChartInstance = null; // Chart.js örneğini tutacak değişken
 
     const LOCAL_STORAGE_KEY = 'cigaretteSavingsData';
 
@@ -230,11 +426,16 @@
                 const price = row.querySelector(".period-price").value;
                 return { date, price };
             });
+        
+        const investedAmount = investedAmountInput.value;
+        const currentValue = currentValueInput.value;
 
         const dataToSave = {
             dailyCigarettes: dailyCigarettes,
             startDate: startDate,
-            periods: periods
+            periods: periods,
+            investedAmount: investedAmount,
+            currentValue: currentValue
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
     }
@@ -243,12 +444,10 @@
      * localStorage'dan verileri yükler.
      */
     function loadData() {
-        // Tüm mevcut dönemleri temizle
         while (pricePeriods.firstChild) {
             pricePeriods.removeChild(pricePeriods.firstChild);
         }
         
-        // Her zaman varsayılan geçmiş verilerini ekle
         addDefaultHistoricalPeriods();
 
         const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -260,12 +459,16 @@
             if (data.periods && data.periods.length > 0) {
                 data.periods.forEach(p => addPeriod(p.date, p.price, true, false));
             }
+            investedAmountInput.value = data.investedAmount || '';
+            currentValueInput.value = data.currentValue || '';
+
         } else {
             document.getElementById("dailyCigarettes").value = '';
             startDateInput.value = '';
+            investedAmountInput.value = '';
+            currentValueInput.value = '';
         }
 
-        // loadData tamamlandıktan sonra hesaplamayı tetikle
         calculateSavings();
     }
 
@@ -289,6 +492,234 @@
     }
 
     /**
+     * Grafiği günceller veya oluşturur.
+     * @param {Object} chartData - Grafik için kullanılacak veri (etiketler ve veri noktaları).
+     */
+    function updateChart(chartData) {
+        if (!savingsChartCanvas || !savingsChartContainer) {
+            console.error("Grafik canvas veya konteyner elementi bulunamadı.");
+            return;
+        }
+
+        if (!chartData || chartData.labels.length === 0) {
+            savingsChartContainer.style.display = 'none';
+            if (savingsChartInstance) {
+                savingsChartInstance.destroy();
+                savingsChartInstance = null;
+            }
+            return;
+        }
+
+        savingsChartContainer.style.display = 'block';
+
+        const ctx = savingsChartCanvas.getContext('2d');
+
+        if (savingsChartInstance) {
+            savingsChartInstance.data.labels = chartData.labels;
+            savingsChartInstance.data.datasets[0].data = chartData.data;
+            savingsChartInstance.update();
+        } else {
+            savingsChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Kümülatif Tasarruf (₺)',
+                        data: chartData.data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tasarruf (₺)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tarih'
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 0,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Sigarasız geçen süre hedeflerini ve ilerleme çubuklarını günceller.
+     * @param {number} daysNotSmoked - Sigarasız geçen toplam gün sayısı.
+     */
+    function updateSmokeFreeGoals(daysNotSmoked) {
+        if (!smokeFreeGoalsDiv || !goalsListDiv) {
+            console.error("Smoke-free goals div or goals list div not found.");
+            return;
+        }
+
+        if (daysNotSmoked <= 0) {
+            smokeFreeGoalsDiv.style.display = 'none';
+            goalsListDiv.innerHTML = '';
+            return;
+        }
+
+        smokeFreeGoalsDiv.style.display = 'block';
+        goalsListDiv.innerHTML = ''; // Önceki hedefleri temizle
+
+        const goals = [
+            { name: "1 Hafta", days: 7 },
+            { name: "1 Ay", days: 30 }, // Ortalama 30 gün
+            { name: "3 Ay", days: 90 },
+            { name: "6 Ay", days: 180 },
+            { name: "1 Yıl", days: 365 },
+            { name: "2 Yıl", days: 365 * 2 },
+            { name: "3 Yıl", days: 365 * 3 },
+            { name: "5 Yıl", days: 365 * 5 },
+            { name: "10 Yıl", days: 365 * 10 }
+        ];
+
+        goals.forEach(goal => {
+            const percentage = Math.min(100, (daysNotSmoked / goal.days) * 100);
+            let progressText = '';
+            let progressBarClass = 'bg-success'; // Varsayılan yeşil
+
+            if (percentage >= 100) {
+                progressText = 'Tamamlandı!';
+            } else {
+                const remainingDays = goal.days - daysNotSmoked;
+                if (remainingDays > 0) {
+                    progressText = `${percentage.toFixed(0)}% tamamlandı`;
+                    // İsteğe bağlı olarak farklı renkler eklenebilir
+                    if (percentage < 25) progressBarClass = 'bg-danger';
+                    else if (percentage < 75) progressBarClass = 'bg-warning';
+                } else {
+                    progressText = 'Tamamlandı!'; // Negatif gün kalma durumu olmaması için
+                }
+            }
+
+            const goalItem = document.createElement('div');
+            goalItem.classList.add('goal-item');
+            goalItem.innerHTML = `
+                <p class="mb-1">${goal.name} Sigarasız</p>
+                <div class="progress">
+                    <div class="progress-bar ${progressBarClass}" role="progressbar" style="width: ${percentage}%" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">${progressText}</div>
+                </div>
+            `;
+            goalsListDiv.appendChild(goalItem);
+        });
+    }
+
+    /**
+     * İçilmeyen sigara ve paket sayılarını günceller.
+     * @param {number} dailyCigarettes - Günlük içilen sigara adedi.
+     * @param {number} daysNotSmoked - Sigarasız geçen toplam gün sayısı.
+     */
+    function updateSmokeFreeStats(dailyCigarettes, daysNotSmoked) {
+        if (!smokeFreeStatsDiv || !totalCigarettesNotSmokedP || !totalPacksNotSmokedP) {
+            console.error("Smoke-free stats elements not found.");
+            return;
+        }
+
+        if (daysNotSmoked <= 0 || dailyCigarettes <= 0) {
+            smokeFreeStatsDiv.style.display = 'none';
+            totalCigarettesNotSmokedP.innerHTML = '';
+            totalPacksNotSmokedP.innerHTML = '';
+            return;
+        }
+
+        smokeFreeStatsDiv.style.display = 'block';
+
+        const totalCigarettesNotSmoked = dailyCigarettes * daysNotSmoked;
+        const totalPacksNotSmoked = totalCigarettesNotSmoked / 20;
+
+        totalCigarettesNotSmokedP.innerHTML = `🚭 İçilmeyen Toplam Sigara Adedi: <strong>${totalCigarettesNotSmoked.toLocaleString('tr-TR')} adet</strong>`;
+        totalPacksNotSmokedP.innerHTML = `📦 İçilmeyen Toplam Paket Sayısı: <strong>${totalPacksNotSmoked.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} paket</strong>`;
+    }
+
+    /**
+     * Yatırım durumunu hesaplar ve günceller.
+     */
+    function updateInvestmentStatus() {
+        if (!investmentTrackerDiv || !investedAmountInput || !currentValueInput || !investmentStatusP) {
+            console.error("Investment tracker elements not found.");
+            return;
+        }
+
+        const investedAmount = parseFloat(investedAmountInput.value);
+        const currentValue = parseFloat(currentValueInput.value);
+
+        // Eğer her iki alan da boşsa veya geçersizse, durumu temizle
+        if (isNaN(investedAmount) && isNaN(currentValue)) {
+            investmentStatusP.innerHTML = 'Yatırım tutarı ve şu anki değeri giriniz.';
+            investmentStatusP.className = 'stats-item text-center neutral';
+            return;
+        }
+        
+        // Eğer sadece biri geçerliyse veya ikisi de sayısal ama negatifse
+        if (isNaN(investedAmount) || isNaN(currentValue) || investedAmount < 0 || currentValue < 0) {
+            investmentStatusP.innerHTML = 'Geçerli sayısal değerler giriniz.';
+            investmentStatusP.className = 'stats-item text-center neutral';
+            return;
+        }
+
+        const profitLoss = currentValue - investedAmount;
+        let percentageChange = 0;
+        let statusText = '';
+        let statusClass = '';
+
+        if (investedAmount === 0) {
+            if (currentValue > 0) {
+                statusText = `Yatırımınızın değeri: ${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺ (Yatırım tutarı sıfır)`;
+                statusClass = 'neutral';
+            } else {
+                statusText = 'Yatırım tutarı ve değeri giriniz.';
+                statusClass = 'neutral';
+            }
+        } else {
+            percentageChange = (profitLoss / investedAmount) * 100;
+
+            if (profitLoss > 0) {
+                statusText = `📈 Kâr: ${profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺ (%${percentageChange.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+                statusClass = 'profit';
+            } else if (profitLoss < 0) {
+                statusText = `📉 Zarar: ${Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺ (%${percentageChange.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+                statusClass = 'loss';
+            } else {
+                statusText = `↔️ Ne Kâr Ne Zarar: ${profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺ (%${percentageChange.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+                statusClass = 'neutral';
+            }
+        }
+        
+        investmentStatusP.innerHTML = statusText;
+        investmentStatusP.className = `stats-item text-center ${statusClass}`; // Sınıfı güncelle
+    }
+
+
+    /**
      * Sigara tasarrufunu hesaplar ve sonuçları günceller.
      */
     function calculateSavings() {
@@ -296,27 +727,21 @@
       const quitDate = new Date(startDateInput.value);
       quitDate.setHours(0, 0, 0, 0);
 
-      // Debug log: Giriş değerlerini kontrol et
-      console.log("calculateSavings triggered. Daily Cigarettes:", dailyCigarettes, "Quit Date String:", startDateInput.value);
-
-      // Gerekli girişlerin kontrolü
-      if (!startDateInput.value || isNaN(dailyCigarettes) || dailyCigarettes <= 0) {
-        if (resultDiv) resultDiv.innerHTML = '';
-        if (detailedSavingsDiv) detailedSavingsDiv.innerHTML = '';
-        saveData();
-        console.log("Invalid input (empty date/cigarettes or non-positive), clearing results.");
-        return;
-      }
-      console.log("Input is valid. Proceeding with calculation.");
-
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
-      if (now < quitDate) {
-        if (resultDiv) resultDiv.innerHTML = 'Bırakma tarihi bugünden ileri bir tarih olamaz.';
+      const timeDiff = now.getTime() - quitDate.getTime();
+      const daysNotSmoked = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24))); // Sigarasız geçen gün sayısı
+
+      // Geçersiz girişler veya ileri tarih kontrolü
+      if (!startDateInput.value || isNaN(dailyCigarettes) || dailyCigarettes <= 0 || now < quitDate) {
+        if (resultDiv) resultDiv.innerHTML = '';
         if (detailedSavingsDiv) detailedSavingsDiv.innerHTML = '';
+        updateChart(null);
+        updateSmokeFreeGoals(0); // Hedefleri temizle
+        updateSmokeFreeStats(0, 0); // İstatistikleri temizle
+        updateInvestmentStatus(); // Yatırım takibini temizle/gizle (sadece durumu temizler, inputları değil)
         saveData();
-        console.log("Quit date is in the future, clearing results.");
         return;
       }
 
@@ -329,7 +754,6 @@
                 const parsedDateString = parseDateFromDDMMYYYY(dateP.textContent);
                 date = new Date(parsedDateString);
                 price = parseFloat(priceP.textContent.replace(' ₺', '')); 
-                console.log(`Historical Period: Display Date: ${dateP.textContent}, Parsed Date String: ${parsedDateString}, Date Object: ${date}, Price: ${price}`);
             } else {
                 console.error("Tarihsel dönem satırında beklenen <p> elementleri eksik:", row);
                 return { date: new Date('Invalid Date'), price: 0 };
@@ -340,7 +764,6 @@
             if (dateInput && priceInput) {
                 date = new Date(dateInput.value);
                 price = parseFloat(priceInput.value);
-                console.log(`User Period: Date Input: ${dateInput.value}, Date Object: ${date}, Price: ${price}`);
             } else {
                 console.error("Kullanıcı tarafından eklenen dönem satırında beklenen input elementleri eksik:", row);
                 return { date: new Date('Invalid Date'), price: 0 };
@@ -348,27 +771,26 @@
         }
         date.setHours(0, 0, 0, 0);
         return { date, price };
-      }).filter(p => {
-          const isValid = !isNaN(p.date.getTime()) && !isNaN(p.price) && p.price > 0;
-          console.log(`Period after map and before filter: Date: ${p.date}, Price: ${p.price}, Is Valid: ${isValid}`);
-          return isValid;
-      });
-
-      console.log("Periods after filtering:", periods); // Debug log
+      }).filter(p => !isNaN(p.date.getTime()) && !isNaN(p.price) && p.price > 0);
 
       if (periods.length === 0) {
         if (resultDiv) resultDiv.innerHTML = 'En az bir geçerli fiyat dönemi ekleyiniz.';
         if (detailedSavingsDiv) detailedSavingsDiv.innerHTML = '';
+        updateChart(null);
+        updateSmokeFreeGoals(0); // Hedefleri temizle
+        updateSmokeFreeStats(0, 0); // İstatistikleri temizle
+        updateInvestmentStatus(); // Yatırım takibini temizle/gizle
         saveData();
-        console.log("No valid periods found after filtering, clearing results.");
         return;
       }
 
       periods.sort((a, b) => a.date.getTime() - b.date.getTime());
 
       let totalSavings = 0;
-      let savingsDetails = []; // Detayları tutacak dizi
-      let periodAccumulatedSavings = {}; // Her dönem için biriken tasarrufu tutacak obje
+      let periodAccumulatedSavings = {};
+      let chartLabels = [];
+      let chartDataPoints = [];
+      let cumulativeSavingsForChart = 0;
 
       let currentDate = new Date(quitDate);
 
@@ -388,22 +810,25 @@
         if (applicablePrice > 0) {
             const dailyCost = (dailyCigarettes / 20) * applicablePrice;
             totalSavings += dailyCost;
+            cumulativeSavingsForChart += dailyCost;
 
-            const periodKey = currentPeriodStartDate.toISOString().split('T')[0]; // Sadece tarih bazında anahtar
+            const periodKey = currentPeriodStartDate.toISOString().split('T')[0];
             if (!periodAccumulatedSavings[periodKey]) {
                 periodAccumulatedSavings[periodKey] = {
                     amount: 0,
                     price: applicablePrice,
-                    startDate: currentPeriodStartDate // Bu, dönemin gerçek başlangıç tarihi
+                    startDate: currentPeriodStartDate
                 };
             }
             periodAccumulatedSavings[periodKey].amount += dailyCost;
+
+            chartLabels.push(formatDateToDDMMYYYY(currentDate.toISOString().split('T')[0]));
+            chartDataPoints.push(cumulativeSavingsForChart);
         }
 
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
-      // Detayları tablo formatında oluştur
       let tableHtml = `
         <table class="table table-sm period-savings-table">
             <thead>
@@ -416,22 +841,15 @@
             <tbody>
       `;
       
-      const sortedPeriodKeys = Object.keys(periodAccumulatedSavings).sort(); // Tarih sırasına göre sırala
+      const sortedPeriodKeys = Object.keys(periodAccumulatedSavings).sort();
 
       for (const key of sortedPeriodKeys) {
           const periodData = periodAccumulatedSavings[key];
-          const periodStartDate = new Date(key); // Dönemin gerçek başlangıç tarihi
+          const periodStartDate = new Date(key);
           
-          // Eğer bırakma tarihi bu dönemin başlangıcından sonraysa,
-          // o dönemin başlangıcını bırakma tarihi olarak kabul et
-          let displayStartDate = periodStartDate;
-          if (periodStartDate < quitDate) {
-              displayStartDate = quitDate;
-          }
-
           tableHtml += `
               <tr>
-                  <td>${formatDateToDDMMYYYY(displayStartDate.toISOString().split('T')[0])}</td>
+                  <td>${formatDateToDDMMYYYY(periodStartDate.toISOString().split('T')[0])}</td>
                   <td>${periodData.price.toFixed(2)} ₺</td>
                   <td class="text-end">${periodData.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</td>
               </tr>
@@ -449,11 +867,15 @@
         </table>
       `;
 
-      // Sonuçları ekrana yazdır
       if (resultDiv) resultDiv.innerHTML = `💰 Tahmini Toplam Tasarruf: <span class="text-dark">${totalSavings.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺</span>`;
-      if (detailedSavingsDiv) detailedSavingsDiv.innerHTML = tableHtml; // Tablo HTML'ini atıyoruz
+      if (detailedSavingsDiv) detailedSavingsDiv.innerHTML = tableHtml;
+      
+      updateChart({ labels: chartLabels, data: chartDataPoints });
+      updateSmokeFreeGoals(daysNotSmoked);
+      updateSmokeFreeStats(dailyCigarettes, daysNotSmoked);
+      updateInvestmentStatus(); // Yatırım takibini güncelle
+
       saveData();
-      console.log("Calculations completed and results rendered.");
     }
 
     // Geçmiş fiyatları göster/gizle düğmesi işlevi
@@ -466,6 +888,10 @@
             toggleHistoricalPeriodsBtn.textContent = 'Geçmiş Fiyatları Göster';
         }
     });
+
+    // Yatırım takibi input'larına olay dinleyicileri ekle
+    investedAmountInput.addEventListener('input', updateInvestmentStatus);
+    currentValueInput.addEventListener('input', updateInvestmentStatus);
 
     document.getElementById("savingsForm").addEventListener("input", calculateSavings);
 
